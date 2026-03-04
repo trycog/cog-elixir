@@ -1,0 +1,6 @@
+/_build/
+/deps/
+/cog_elixir
+/bin/
+*.beam
+erl_crash.dump
