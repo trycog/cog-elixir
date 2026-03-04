@@ -31,18 +31,32 @@ This clones the repo, builds with `mix escript.build`, and installs to `~/.confi
 
 ## Code Intelligence
 
-Index Elixir source files in your project:
+Add index patterns to your project's `.cog/settings.json`:
+
+```json
+{
+  "code": {
+    "index": [
+      "lib/**/*.ex",
+      "test/**/*.exs",
+      "mix.exs"
+    ]
+  }
+}
+```
+
+Then index your project:
 
 ```sh
-cog code/index "**/*.ex"
+cog code:index
 ```
 
 Query symbols:
 
 ```sh
-cog code/query --find "start_link"
-cog code/query --refs "handle_call" --limit 20
-cog code/query --symbols lib/my_app/worker.ex
+cog code:query --find "start_link"
+cog code:query --refs "handle_call" --limit 20
+cog code:query --symbols lib/my_app/worker.ex
 ```
 
 | File Type | Capabilities |
