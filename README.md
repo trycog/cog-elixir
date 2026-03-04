@@ -2,7 +2,7 @@
 
 # cog-elixir
 
-**Elixir language extension for [Cog](https://github.com/bcardarella/cog).**
+**Elixir language extension for [Cog](https://github.com/trycog/cog-cli).**
 
 SCIP-based code intelligence and DAP debugging for Elixir projects.
 
@@ -17,7 +17,7 @@ SCIP-based code intelligence and DAP debugging for Elixir projects.
 ### Prerequisites
 
 - [Elixir 1.14+](https://elixir-lang.org/install.html) (with Erlang/OTP)
-- [Cog](https://github.com/bcardarella/cog) CLI installed
+- [Cog](https://github.com/trycog/cog-cli) CLI installed
 
 ### Install
 
