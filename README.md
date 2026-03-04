@@ -22,7 +22,7 @@ SCIP-based code intelligence and DAP debugging for Elixir projects.
 ### Install
 
 ```sh
-cog install https://github.com/bcardarella/cog-elixir.git
+cog install https://github.com/trycog/cog-elixir.git
 ```
 
 This clones the repo, builds with `mix escript.build`, and installs to `~/.config/cog/extensions/cog-elixir/`.
