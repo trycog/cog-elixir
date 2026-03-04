@@ -51,13 +51,13 @@ Then index your project:
 cog code:index
 ```
 
-Query symbols:
+Once indexed, AI agents query symbols through Cog's MCP tools:
 
-```sh
-cog code:query --find "start_link"
-cog code:query --refs "handle_call" --limit 20
-cog code:query --symbols lib/my_app/worker.ex
-```
+- `cog_code_explore` — Find symbols by name, returns full definition bodies and references
+- `cog_code_query` — Low-level queries: find definitions, references, or list symbols in a file
+- `cog_code_status` — Check index availability and coverage
+
+The index is stored at `.cog/index.scip` and automatically kept up-to-date by Cog's file watcher after the initial build.
 
 | File Type | Capabilities |
 |-----------|--------------|
@@ -85,13 +85,18 @@ The SCIP indexer supports:
 
 ## Debugging
 
-Start the MCP debug server:
+Cog's debug daemon manages debug sessions through the DAP (Debug Adapter Protocol). AI agents interact with debugging through MCP tools — `cog_debug_launch`, `cog_debug_breakpoint`, `cog_debug_run`, `cog_debug_inspect`, `cog_debug_stacktrace`, and others.
+
+### Daemon commands
 
 ```sh
-cog debug/serve
+cog debug:serve       # Start the debug daemon
+cog debug:status      # Check daemon health and active sessions
+cog debug:dashboard   # Live session monitoring TUI
+cog debug:kill        # Stop the daemon
 ```
 
-Launch an Elixir program through the debug server for breakpoints, stepping, and variable inspection.
+### Configuration
 
 | Setting | Value |
 |---------|-------|
@@ -99,7 +104,7 @@ Launch an Elixir program through the debug server for breakpoints, stepping, and
 | Transport | `stdio` |
 | Boundary markers | `:erlang.apply`, `:elixir_compiler`, `:elixir_dispatch` |
 
-Boundary markers filter Elixir/Erlang runtime internals from stack traces so you only see your code.
+Boundary markers filter Elixir/Erlang runtime internals from stack traces so agents only see your code.
 
 **Prerequisite:** [ElixirLS](https://github.com/elixir-lsp/elixir-ls) must be installed and available as `elixir_ls` in your `$PATH`.
 
