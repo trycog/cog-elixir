@@ -1,4 +1,6 @@
+.cog/
 /_build/
+d/
 /deps/
 /cog_elixir
 /bin/

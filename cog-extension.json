@@ -1,6 +1,7 @@
 {
   "name": "cog-elixir",
   "extensions": [".ex", ".exs"],
+  "language_names": ["elixir"],
   "args": ["{file}", "--output", "{output}"],
   "build": "mix escript.build && mkdir -p bin && cp cog_elixir bin/cog-elixir",
   "debugger": {
@@ -10,7 +11,11 @@
       "args": ["--stdio"],
       "transport": "stdio"
     },
-    "launch_args": "{\"type\":\"mix_task\",\"task\":\"run\",\"taskArgs\":[\"{program}\"],\"projectDir\":\"{cwd}\",\"requireFiles\":[\"test/**/test_helper.exs\",\"test/**/*_test.exs\"]}",
+    "launch_args": "{\"type\":\"mix_task\",\"projectDir\":\"{cwd}\",\"requireFiles\":[\"lib/**/*.ex\"],\"exitAfterTaskReturns\":false}",
+    "program_field": "task",
+    "args_field": "taskArgs",
+    "args_first_is_program": true,
+    "skip_entry_stop": true,
     "boundary_markers": [":erlang.apply", ":elixir_compiler", ":elixir_dispatch"]
   }
 }
