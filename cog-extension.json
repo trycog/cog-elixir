@@ -2,7 +2,7 @@
   "name": "cog-elixir",
   "extensions": [".ex", ".exs"],
   "language_names": ["elixir"],
-  "args": ["{file}", "--output", "{output}"],
+  "args": ["--output", "{output}", "{files}"],
   "build": "mix escript.build && mkdir -p bin && cp cog_elixir bin/cog-elixir",
   "debugger": {
     "type": "dap",

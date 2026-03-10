@@ -112,19 +112,24 @@ Boundary markers filter Elixir/Erlang runtime internals from stack traces so age
 
 ## How It Works
 
-Cog invokes `cog-elixir` once per file. The binary discovers the project context and runs the indexer:
+Cog invokes `cog-elixir` once per extension group. It expands the matched file
+paths directly onto argv, and the binary distributes parsing work internally
+across concurrent tasks. Individual file failures are logged and converted into
+empty documents so the rest of the batch still completes. As each task
+finishes, `cog-elixir` emits structured progress events on stderr so Cog can
+advance its progress UI file by file.
 
 ```
-cog invokes:  bin/cog-elixir <file_path> --output <output_path>
+cog invokes:  bin/cog-elixir --output <output_path> <file_path> [file_path ...]
 ```
 
 **Auto-discovery:**
 
 | Step | Logic |
 |------|-------|
-| Workspace root | Walks up from input file until a directory containing `mix.exs` is found (fallback: file parent directory). |
+| Workspace root | Walks up from each input file until a directory containing `mix.exs` is found (fallback: file parent directory). |
 | Project name | Parsed from `mix.exs` `app: :name` field via regex. Falls back to workspace directory name. |
-| Indexed target | The exact file passed in `{file}`; output is a SCIP protobuf containing one document. |
+| Indexed target | Every file expanded from `{files}`; output is one SCIP protobuf containing one document per input file. |
 
 ### Architecture
 
@@ -170,7 +175,7 @@ Tests cover CLI parsing, workspace discovery, symbol string generation, protobuf
 
 ```sh
 mix escript.build
-./cog_elixir /path/to/file.ex --output /tmp/index.scip
+./cog_elixir --output /tmp/index.scip /path/to/file.ex /path/to/other.ex
 ```
 
 ---

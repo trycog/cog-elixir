@@ -3,14 +3,14 @@ defmodule CogElixir.CLITest do
 
   alias CogElixir.CLI
 
-  test "parses file path and output path" do
-    assert {:ok, "src/main.ex", "/tmp/out.scip"} =
-             CLI.parse(["src/main.ex", "--output", "/tmp/out.scip"])
+  test "parses file list and output path" do
+    assert {:ok, ["lib/a.ex", "lib/b.ex"], "/tmp/out.scip"} =
+             CLI.parse(["--output", "/tmp/out.scip", "lib/a.ex", "lib/b.ex"])
   end
 
-  test "handles output before file path" do
-    assert {:ok, "src/main.ex", "/tmp/out.scip"} =
-             CLI.parse(["--output", "/tmp/out.scip", "src/main.ex"])
+  test "handles file list before output path" do
+    assert {:ok, ["lib/a.ex", "lib/b.ex"], "/tmp/out.scip"} =
+             CLI.parse(["lib/a.ex", "lib/b.ex", "--output", "/tmp/out.scip"])
   end
 
   test "returns error when no arguments" do
@@ -21,7 +21,7 @@ defmodule CogElixir.CLITest do
     assert {:error, _} = CLI.parse(["src/main.ex"])
   end
 
-  test "returns error when missing file path" do
+  test "returns error when missing files" do
     assert {:error, _} = CLI.parse(["--output", "/tmp/out.scip"])
   end
 end

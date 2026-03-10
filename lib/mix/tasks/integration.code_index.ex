@@ -79,9 +79,12 @@ defmodule Mix.Tasks.Integration.CodeIndex do
       escript = Path.join([root_dir, "bin", "cog-elixir"])
 
       if File.exists?(escript) do
-        tool_check_out = Path.join(System.tmp_dir!(), "cog-elixir-toolcheck-#{:rand.uniform(999_999)}.scip")
+        tool_check_out =
+          Path.join(System.tmp_dir!(), "cog-elixir-toolcheck-#{:rand.uniform(999_999)}.scip")
 
-        Helpers.cmd(escript, [Path.join(work_dir, "lib/debug_app.ex"), "--output", tool_check_out],
+        Helpers.cmd(
+          escript,
+          ["--output", tool_check_out, Path.join(work_dir, "lib/debug_app.ex")],
           cd: work_dir
         )
 
@@ -123,10 +126,11 @@ defmodule Mix.Tasks.Integration.CodeIndex do
       IO.puts("--- Test: Direct escript invocation ---")
 
       if File.exists?(escript) do
-        escript_out = Path.join(System.tmp_dir!(), "cog-elixir-direct-#{:rand.uniform(999_999)}.scip")
+        escript_out =
+          Path.join(System.tmp_dir!(), "cog-elixir-direct-#{:rand.uniform(999_999)}.scip")
 
         {escript_exit, _} =
-          Helpers.cmd(escript, [Path.join(work_dir, "lib/debug_app.ex"), "--output", escript_out],
+          Helpers.cmd(escript, ["--output", escript_out, Path.join(work_dir, "lib/debug_app.ex")],
             cd: work_dir
           )
 
