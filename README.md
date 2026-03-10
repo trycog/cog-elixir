@@ -45,6 +45,24 @@ Add index patterns to your project's `.cog/settings.json`:
 }
 ```
 
+For Phoenix umbrella apps, you can combine includes with a negative glob so Cog
+indexes source JS but skips compiled assets under each app's `priv/static`
+directory:
+
+```json
+{
+  "code": {
+    "index": [
+      "apps/**/*.js",
+      "!apps/**/priv/static/**",
+      "apps/**/*.ex",
+      "apps/**/*.exs",
+      "mix.exs"
+    ]
+  }
+}
+```
+
 Then index your project:
 
 ```sh
