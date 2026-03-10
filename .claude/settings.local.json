@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:docs.rs)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:crates.io)",
+      "WebFetch(domain:elixir-lsp.github.io)",
+      "Bash(mix compile:*)",
+      "Bash(mix test:*)",
+      "Bash(elixir:*)",
+      "Bash(mkdir:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(grep:*)",
+      "Bash(cog:*)",
+      "Bash(chmod +x:*)",
+      "Bash(bash:*)",
+      "Bash(echo \"grep exit: $?\" strings \"$ESCRIPT_OUT\")",
+      "Bash(mix help:*)",
+      "Bash(CLAUDECODE=test elixir:*)",
+      "Bash(echo CLAUDECODE=$CLAUDECODE:*)",
+      "Bash(python3:*)",
+      "Bash(zig build:*)",
+      "Bash(pushd:*)",
+      "Bash(ls:*)",
+      "Bash(::*)",
+      "Bash(mix:*)",
+      "WebFetch(domain:microsoft.github.io)",
+      "Bash(CLAUDECODE=\"\" timeout 30 claude:*)",
+      "Bash(env:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(curl:*)",
+      "WebFetch(domain:gist.github.com)",
+      "Bash(PATH=\"/Users/bcardarella/projects/cog-cli/zig-out/bin:$PATH\" unset CLAUDECODE:*)",
+      "Bash(pgrep:*)",
+      "Bash(ps:*)",
+      "WebFetch(domain:hexdocs.pm)",
+      "Bash(git push:*)",
+      "Bash(gh api:*)"
+    ]
+  }
+}

@@ -69,7 +69,8 @@ defmodule Mix.Tasks.Integration.Helpers do
 
       # Copy settings files only, skip agents/
       for file <- File.ls!(claude_dir),
-          Path.extname(file) in [".json", ".local.json"] or file in ["settings.json", "settings.local.json"] do
+          Path.extname(file) in [".json", ".local.json"] or
+            file in ["settings.json", "settings.local.json"] do
         src = Path.join(claude_dir, file)
         if File.regular?(src), do: File.cp!(src, Path.join(dest_claude, file))
       end
@@ -114,12 +115,19 @@ defmodule Mix.Tasks.Integration.Helpers do
     counts = Agent.get(__MODULE__, & &1)
 
     IO.puts("")
-    IO.puts("\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500")
+
+    IO.puts(
+      "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500"
+    )
+
     IO.puts("  #{@green}Passed:  #{counts.pass}#{@reset}")
     IO.puts("  #{@red}Failed:  #{counts.fail}#{@reset}")
     IO.puts("  #{@yellow}Warnings: #{counts.warn}#{@reset}")
     IO.puts("  #{@cyan}Skipped: #{counts.skip}#{@reset}")
-    IO.puts("\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500")
+
+    IO.puts(
+      "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500"
+    )
 
     if counts.fail > 0 do
       IO.puts("#{@red}SUITE FAILED#{@reset}")

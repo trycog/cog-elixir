@@ -178,6 +178,22 @@ mix escript.build
 ./cog_elixir --output /tmp/index.scip /path/to/file.ex /path/to/other.ex
 ```
 
+### Hang diagnostics
+
+For hard-to-reproduce indexing hangs, enable structured debug logging and an
+optional per-file timeout:
+
+```sh
+COG_ELIXIR_DEBUG=1 \
+COG_ELIXIR_FILE_TIMEOUT_MS=30000 \
+./cog_elixir --output /tmp/index.scip lib/app.ex lib/other.ex 2> /tmp/cog-elixir-debug.log
+```
+
+With `COG_ELIXIR_DEBUG=1`, the indexer emits newline-delimited JSON debug events
+to stderr for each file/stage, including timing, BEAM memory snapshots, task
+memory, reductions, queue length, and periodic `file_still_running` watchdog
+events while a file is hung.
+
 ---
 
 <div align="center">
