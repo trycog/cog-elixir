@@ -14,7 +14,7 @@ defmodule CogElixir.Protobuf do
   def encode_varint(value) when value >= 0 and value < 128, do: <<value>>
 
   def encode_varint(value) when value >= 0 do
-    <<((value &&& 0x7F) ||| 0x80)>> <> encode_varint(value >>> 7)
+    <<(value &&& 0x7F) ||| 0x80>> <> encode_varint(value >>> 7)
   end
 
   def encode_varint(value) when value < 0 do
@@ -22,7 +22,7 @@ defmodule CogElixir.Protobuf do
   end
 
   def encode_tag(field_number, wire_type) do
-    encode_varint((field_number <<< 3) ||| wire_type)
+    encode_varint(field_number <<< 3 ||| wire_type)
   end
 
   # --- Field encoders ---
@@ -150,7 +150,8 @@ defmodule CogElixir.Protobuf do
       encode_bool_field(2, r.is_reference),
       encode_bool_field(3, r.is_implementation),
       encode_bool_field(4, r.is_type_definition),
-      encode_bool_field(5, r.is_definition)
+      encode_bool_field(5, r.is_definition),
+      encode_string_field(6, r.kind)
     ]
   end
 end

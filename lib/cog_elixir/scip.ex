@@ -76,6 +76,7 @@ defmodule CogElixir.Scip do
               is_reference: false,
               is_implementation: false,
               is_type_definition: false,
-              is_definition: false
+              is_definition: false,
+              kind: ""
   end
 end

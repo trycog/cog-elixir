@@ -9,6 +9,8 @@ defmodule CogElixir.Analyzer do
             relative_path: "",
             occurrences: [],
             symbols: [],
+            relationships: %{},
+            file_imports: [],
             scope_stack: [],
             local_counter: 0,
             pending_doc: nil,
@@ -31,7 +33,7 @@ defmodule CogElixir.Analyzer do
           language: "elixir",
           relative_path: relative_path,
           occurrences: Enum.reverse(state.occurrences),
-          symbols: Enum.reverse(state.symbols)
+          symbols: finalize_symbols(state)
         }
 
       {:error, _} ->
@@ -614,13 +616,14 @@ defmodule CogElixir.Analyzer do
       symbol_roles: Scip.role_import()
     }
 
-    add_occurrence(state, occurrence)
+    state
+    |> add_occurrence(occurrence)
+    |> add_import_relationship(symbol)
   end
 
   # alias/import/use/require with options (e.g., alias Foo, as: Bar)
   defp walk(
-         {directive, _meta,
-          [{:__aliases__, _alias_meta, _segments} = alias_node, _opts]},
+         {directive, _meta, [{:__aliases__, _alias_meta, _segments} = alias_node, _opts]},
          state
        )
        when directive in [:alias, :import, :use, :require] do
@@ -634,7 +637,78 @@ defmodule CogElixir.Analyzer do
       symbol_roles: Scip.role_import()
     }
 
-    add_occurrence(state, occurrence)
+    state
+    |> add_occurrence(occurrence)
+    |> add_import_relationship(symbol)
+  end
+
+  defp walk({{:., _meta, [module_ref, func_name]}, _call_meta, args}, state)
+       when is_atom(func_name) and is_list(args) do
+    module_name = extract_module_name(module_ref, state)
+    symbol = Symbol.function_symbol(state.package_name, module_name, func_name, length(args))
+
+    state =
+      state
+      |> add_occurrence(%Scip.Occurrence{
+        range: alias_range(module_ref, module_name),
+        symbol: symbol,
+        symbol_roles: Scip.role_read()
+      })
+      |> add_call_relationship(symbol)
+
+    Enum.reduce(args, state, fn arg, acc -> walk(arg, acc) end)
+  end
+
+  defp walk({name, meta, args}, state)
+       when is_atom(name) and is_list(args) and
+              name not in [
+                :defmodule,
+                :defprotocol,
+                :defimpl,
+                :def,
+                :defp,
+                :defmacro,
+                :defmacrop,
+                :defguard,
+                :defguardp,
+                :defdelegate,
+                :defstruct,
+                :alias,
+                :import,
+                :use,
+                :require,
+                :@,
+                :__block__,
+                :fn,
+                :case,
+                :cond,
+                :for,
+                :if,
+                :unless,
+                :with,
+                :quote,
+                :try,
+                :receive,
+                :%{},
+                :{},
+                :__aliases__
+              ] do
+    module_name = current_module_name(state)
+    symbol = Symbol.function_symbol(state.package_name, module_name, name, length(args))
+    line = Keyword.get(meta, :line, 1)
+    col = Keyword.get(meta, :column, 1)
+    name_str = Atom.to_string(name)
+
+    state =
+      state
+      |> add_occurrence(%Scip.Occurrence{
+        range: [line - 1, col - 1, col - 1 + String.length(name_str)],
+        symbol: symbol,
+        symbol_roles: Scip.role_read()
+      })
+      |> add_call_relationship(symbol)
+
+    Enum.reduce(args, state, fn arg, acc -> walk(arg, acc) end)
   end
 
   # use with atom module (e.g., use :logger)
@@ -815,6 +889,57 @@ defmodule CogElixir.Analyzer do
 
   defp doc_list(nil), do: []
   defp doc_list(doc), do: [doc]
+
+  defp finalize_symbols(state) do
+    symbols = Enum.reverse(state.symbols)
+
+    Enum.map(symbols, fn sym ->
+      rels = Map.get(state.relationships, sym.symbol, [])
+
+      rels =
+        if sym.enclosing_symbol == "" do
+          rels ++ state.file_imports
+        else
+          rels
+        end
+
+      %{sym | relationships: dedupe_relationships(rels)}
+    end)
+  end
+
+  defp dedupe_relationships(relationships) do
+    relationships
+    |> Enum.reverse()
+    |> Enum.uniq_by(fn rel -> {rel.symbol, rel.kind, rel.is_reference, rel.is_definition} end)
+  end
+
+  defp add_import_relationship(state, target_symbol) do
+    rel = %Scip.Relationship{symbol: target_symbol, kind: "imports"}
+
+    case current_enclosing(state) do
+      "" -> %{state | file_imports: [rel | state.file_imports]}
+      owner -> add_relationship(state, owner, rel)
+    end
+  end
+
+  defp add_call_relationship(state, target_symbol) do
+    case current_enclosing(state) do
+      "" ->
+        state
+
+      owner ->
+        add_relationship(state, owner, %Scip.Relationship{
+          symbol: target_symbol,
+          is_reference: true,
+          kind: "calls"
+        })
+    end
+  end
+
+  defp add_relationship(state, owner_symbol, relationship) do
+    updated = Map.update(state.relationships, owner_symbol, [relationship], &[relationship | &1])
+    %{state | relationships: updated}
+  end
 
   defp add_occurrence(state, occurrence) do
     %{state | occurrences: [occurrence | state.occurrences]}

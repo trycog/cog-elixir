@@ -91,4 +91,12 @@ defmodule CogElixir.ProtobufTest do
     assert is_binary(data)
     assert byte_size(data) > 0
   end
+
+  test "encode_relationship encodes custom relationship kind" do
+    rel = %Scip.Relationship{symbol: "cog/import/lib/other.ex", kind: "imports"}
+    data = IO.iodata_to_binary(Protobuf.encode_relationship(rel))
+
+    assert is_binary(data)
+    assert data =~ "imports"
+  end
 end

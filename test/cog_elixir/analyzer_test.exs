@@ -106,7 +106,8 @@ defmodule CogElixir.AnalyzerTest do
     # But should have two occurrences for the definition
     occs =
       Enum.filter(doc.occurrences, fn o ->
-        o.symbol == symbols |> hd() |> Map.get(:symbol) and o.symbol_roles == Scip.role_definition()
+        o.symbol == symbols |> hd() |> Map.get(:symbol) and
+          o.symbol_roles == Scip.role_definition()
       end)
 
     assert length(occs) == 2
@@ -235,6 +236,34 @@ defmodule CogElixir.AnalyzerTest do
     sym = find_symbol(doc, "size/1")
     assert sym != nil
     assert sym.kind == Scip.kind_function()
+  end
+
+  test "attaches import relationship to enclosing symbol" do
+    source = """
+    defmodule MyModule do
+      alias Other.Module
+      def run, do: :ok
+    end
+    """
+
+    doc = analyze(source)
+    sym = find_symbol(doc, "MyModule")
+    assert sym != nil
+    assert Enum.any?(sym.relationships, &(&1.kind == "imports"))
+  end
+
+  test "attaches call relationship to enclosing function" do
+    source = """
+    defmodule MyModule do
+      def greet(name), do: format(name)
+      def format(name), do: name
+    end
+    """
+
+    doc = analyze(source)
+    sym = find_symbol(doc, "greet/1")
+    assert sym != nil
+    assert Enum.any?(sym.relationships, &(&1.kind == "calls"))
   end
 
   # --- Types ---
