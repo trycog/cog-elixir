@@ -33,6 +33,29 @@ defmodule CogElixir.Symbol do
     function_symbol(package_name, module_name, cb_name, arity)
   end
 
+  def template_symbol(package_name, relative_path) do
+    "#{@scheme} #{@manager} #{package_name} #{@version} #{escape_identifier(relative_path)}#"
+  end
+
+  def template_assign_symbol(package_name, relative_path, assign_name) do
+    "#{template_symbol(package_name, relative_path)}#{escape_identifier("@#{Atom.to_string(assign_name)}")}."
+  end
+
+  def template_slot_symbol(package_name, relative_path, slot_name) do
+    "#{template_symbol(package_name, relative_path)}#{escape_identifier(":#{slot_name}")}."
+  end
+
+  def template_local_symbol(package_name, relative_path, local_name, line) do
+    "#{template_symbol(package_name, relative_path)}#{escape_identifier(local_name)}(#{line})."
+  end
+
+  def component_symbol(package_name, module_name, component_name, arity) do
+    component_name =
+      if is_atom(component_name), do: Atom.to_string(component_name), else: component_name
+
+    "#{@scheme} #{@manager} #{package_name} #{@version} #{escape_identifier(module_name)}##{escape_identifier(component_name)}(#{arity})."
+  end
+
   def local_symbol(index) do
     "local #{index}"
   end

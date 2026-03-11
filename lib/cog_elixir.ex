@@ -1,7 +1,7 @@
 defmodule CogElixir do
   @moduledoc false
 
-  alias CogElixir.{CLI, Workspace, Analyzer, Protobuf, Scip}
+  alias CogElixir.{CLI, Workspace, Frontend, Protobuf, Scip}
 
   @version "0.1.0"
   @watchdog_interval_ms 5_000
@@ -101,7 +101,7 @@ defmodule CogElixir do
 
           document =
             timed_stage(relative_path, "analyze", fn ->
-              Analyzer.analyze(source, project_name, relative_path)
+              Frontend.analyze(source, project_name, relative_path)
             end)
 
           result = build_result(workspace_root, project_name, document, :ok)

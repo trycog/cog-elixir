@@ -38,6 +38,8 @@ Add index patterns to your project's `.cog/settings.json`:
   "code": {
     "index": [
       "lib/**/*.ex",
+      "lib/**/*.eex",
+      "lib/**/*.heex",
       "test/**/*.exs",
       "mix.exs"
     ]
@@ -56,6 +58,8 @@ directory:
       "apps/**/*.js",
       "!apps/**/priv/static/**",
       "apps/**/*.ex",
+      "apps/**/*.eex",
+      "apps/**/*.heex",
       "apps/**/*.exs",
       "mix.exs"
     ]
@@ -81,6 +85,8 @@ The index is stored at `.cog/index.scip` and automatically kept up-to-date by Co
 |-----------|--------------|
 | `.ex` | Go-to-definition, find references, symbol search, project structure |
 | `.exs` | Same capabilities (config, test, and script files) |
+| `.eex` | Embedded Elixir expressions, template assigns, and file-level template ownership |
+| `.heex` | Embedded expressions, component refs, named slots, assigns, and template locals from `:let` / `:for` |
 
 ### Indexing Features
 
@@ -98,6 +104,8 @@ The SCIP indexer supports:
 - Import references (`alias`, `import`, `use`, `require`, `@behaviour`)
 - Documentation attachment (`@doc`, `@moduledoc`)
 - Scope tracking with `enclosing_symbol` for nested definitions
+- EEx template expressions and `@assign` reads
+- HEEx component calls, named slots, `:if` / `:for` assign usage, and local bindings from `:let` / comprehensions
 
 ---
 
@@ -157,13 +165,18 @@ lib/
 └── cog_elixir/
     ├── cli.ex                   # CLI argument parsing
     ├── workspace.ex             # Mix project discovery
+    ├── frontend.ex              # File-type routing (.ex/.exs/.eex/.heex)
     ├── analyzer.ex              # Elixir AST walker and symbol extraction
+    ├── frontend/
+    │   ├── elixir_file.ex       # Standard Elixir source analysis
+    │   ├── eex_file.ex          # EEx compilation and template indexing
+    │   └── heex_file.ex         # HEEx compilation via Phoenix LiveView
     ├── symbol.ex                # SCIP symbol string builder
     ├── scip.ex                  # SCIP protocol data structures
     └── protobuf.ex              # Protobuf wire format encoder
 ```
 
-The indexer has zero Hex dependencies — parsing uses Elixir's built-in `Code.string_to_quoted/2` and protobuf encoding is implemented from scratch.
+Standard Elixir parsing uses Elixir's built-in `Code.string_to_quoted/2`. Template parsing uses `EEx` for `.eex` and Phoenix LiveView's HEEx compiler for `.heex`. Protobuf encoding is still implemented locally.
 
 ---
 
@@ -187,7 +200,7 @@ mkdir -p bin && cp cog_elixir bin/cog-elixir
 mix test
 ```
 
-Tests cover CLI parsing, workspace discovery, symbol string generation, protobuf encoding, and fixture-based indexing (simple modules, multi-module projects with alias/import, protocols with implementations).
+Tests cover CLI parsing, workspace discovery, symbol string generation, protobuf encoding, direct frontend indexing for `.eex` / `.heex`, and fixture-style end-to-end indexing through `main/1`.
 
 ### Manual verification
 
@@ -210,7 +223,9 @@ COG_ELIXIR_FILE_TIMEOUT_MS=30000 \
 With `COG_ELIXIR_DEBUG=1`, the indexer emits newline-delimited JSON debug events
 to stderr for each file/stage, including timing, BEAM memory snapshots, task
 memory, reductions, queue length, and periodic `file_still_running` watchdog
-events while a file is hung.
+events while a file is hung. When run through `cog code:index` with Cog debug
+logging enabled, those non-progress stderr lines are forwarded into
+`.cog/cog.log` while progress JSON continues to drive the live TUI.
 
 ---
 

@@ -7,6 +7,7 @@ defmodule CogElixir.Analyzer do
   defstruct source: "",
             package_name: "",
             relative_path: "",
+            file_owner: "",
             occurrences: [],
             symbols: [],
             relationships: %{},
@@ -21,24 +22,29 @@ defmodule CogElixir.Analyzer do
 
     case Code.string_to_quoted(source, opts) do
       {:ok, ast} ->
-        state = %__MODULE__{
-          source: source,
-          package_name: package_name,
-          relative_path: relative_path
-        }
-
-        state = walk(ast, state)
-
-        %Scip.Document{
-          language: "elixir",
-          relative_path: relative_path,
-          occurrences: Enum.reverse(state.occurrences),
-          symbols: finalize_symbols(state)
-        }
+        analyze_ast(ast, source, package_name, relative_path)
 
       {:error, _} ->
         %Scip.Document{language: "elixir", relative_path: relative_path}
     end
+  end
+
+  def analyze_ast(ast, source, package_name, relative_path, opts \\ []) do
+    state = %__MODULE__{
+      source: source,
+      package_name: package_name,
+      relative_path: relative_path,
+      file_owner: Keyword.get(opts, :file_owner, "")
+    }
+
+    state = walk(ast, state)
+
+    %Scip.Document{
+      language: "elixir",
+      relative_path: relative_path,
+      occurrences: Enum.reverse(state.occurrences),
+      symbols: finalize_symbols(state)
+    }
   end
 
   # --- AST Walking ---
@@ -642,6 +648,33 @@ defmodule CogElixir.Analyzer do
     |> add_import_relationship(symbol)
   end
 
+  defp walk(
+         {{:., _meta, [{:__aliases__, _, [:EEx, :Engine]}, :fetch_assign!]}, call_meta,
+          [{:var!, _, [{:assigns, _, _}]}, assign_name]},
+         state
+       )
+       when is_atom(assign_name) do
+    line = Keyword.get(call_meta, :line, 1)
+    range = assign_range(state.source, line, assign_name)
+    symbol = Symbol.template_assign_symbol(state.package_name, state.relative_path, assign_name)
+
+    state =
+      state
+      |> add_occurrence(%Scip.Occurrence{
+        range: range,
+        symbol: symbol,
+        symbol_roles: Scip.role_read()
+      })
+      |> add_symbol_info(%Scip.SymbolInformation{
+        symbol: symbol,
+        kind: Scip.kind_constant(),
+        display_name: "@#{assign_name}",
+        enclosing_symbol: current_enclosing(state)
+      })
+
+    add_call_relationship(state, symbol)
+  end
+
   defp walk({{:., _meta, [module_ref, func_name]}, _call_meta, args}, state)
        when is_atom(func_name) and is_list(args) do
     module_name = extract_module_name(module_ref, state)
@@ -854,6 +887,20 @@ defmodule CogElixir.Analyzer do
 
   defp alias_range(_, _), do: [0, 0, 0]
 
+  defp assign_range(source, line, assign_name) do
+    line_text =
+      source
+      |> String.split("\n")
+      |> Enum.at(max(line - 1, 0), "")
+
+    needle = "@#{assign_name}"
+
+    case :binary.match(line_text, needle) do
+      {col, len} -> [line - 1, col, col + len]
+      :nomatch -> [line - 1, 0, byte_size(needle)]
+    end
+  end
+
   defp current_module_name(%__MODULE__{scope_stack: []}), do: "Unknown"
 
   defp current_module_name(%__MODULE__{scope_stack: [current | _]}) do
@@ -871,7 +918,7 @@ defmodule CogElixir.Analyzer do
     end
   end
 
-  defp current_enclosing(%__MODULE__{scope_stack: []}), do: ""
+  defp current_enclosing(%__MODULE__{scope_stack: [], file_owner: file_owner}), do: file_owner
   defp current_enclosing(%__MODULE__{scope_stack: [current | _]}), do: current
 
   defp push_scope(state, symbol) do

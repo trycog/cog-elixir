@@ -9,7 +9,7 @@ defmodule CogElixir.MixProject do
       version: @version,
       elixir: "~> 1.14",
       start_permanent: false,
-      deps: [],
+      deps: deps(),
       escript: escript(),
       test_paths: ["test"],
       test_pattern: "*_test.exs"
@@ -18,6 +18,13 @@ defmodule CogElixir.MixProject do
 
   def application do
     [extra_applications: []]
+  end
+
+  defp deps do
+    [
+      {:phoenix_live_view, "~> 1.1"},
+      {:phoenix_html, "~> 4.2"}
+    ]
   end
 
   defp escript do

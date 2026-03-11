@@ -1,6 +1,6 @@
 {
   "name": "cog-elixir",
-  "extensions": [".ex", ".exs"],
+  "extensions": [".ex", ".exs", ".eex", ".heex"],
   "language_names": ["elixir"],
   "args": ["--output", "{output}", "{files}"],
   "build": "mix escript.build && mkdir -p bin && cp cog_elixir bin/cog-elixir",
