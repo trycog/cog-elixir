@@ -25,7 +25,7 @@ SCIP-based code intelligence and DAP debugging for Elixir projects.
 cog install https://github.com/trycog/cog-elixir.git
 ```
 
-This clones the repo, builds with `mix escript.build`, and installs to `~/.config/cog/extensions/cog-elixir/`.
+This clones the repo, fetches Hex dependencies, builds with `mix escript.build`, and installs to `~/.config/cog/extensions/cog-elixir/`.
 
 ---
 
@@ -185,6 +185,8 @@ Standard Elixir parsing uses Elixir's built-in `Code.string_to_quoted/2`. Templa
 ### Build from source
 
 ```sh
+mix local.hex --force
+mix deps.get
 mix escript.build
 ```
 
@@ -205,6 +207,8 @@ Tests cover CLI parsing, workspace discovery, symbol string generation, protobuf
 ### Manual verification
 
 ```sh
+mix local.hex --force
+mix deps.get
 mix escript.build
 ./cog_elixir --output /tmp/index.scip /path/to/file.ex /path/to/other.ex
 ```
