@@ -1,4 +1,6 @@
 .cog/
+.claude/
+.opencode/
 /_build/
 d/
 /deps/
