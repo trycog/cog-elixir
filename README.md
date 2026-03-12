@@ -22,10 +22,15 @@ SCIP-based code intelligence and DAP debugging for Elixir projects.
 ### Install
 
 ```sh
-cog install https://github.com/trycog/cog-elixir.git
+cog ext:install https://github.com/trycog/cog-elixir.git
+cog ext:install https://github.com/trycog/cog-elixir --version=0.1.0
+cog ext:update
+cog ext:update cog-elixir
 ```
 
-This clones the repo, fetches Hex dependencies, builds with `mix escript.build`, and installs to `~/.config/cog/extensions/cog-elixir/`.
+Cog downloads the tagged GitHub release tarball, then builds locally on the installing machine with `mix escript.build` and installs to `~/.config/cog/extensions/cog-elixir/`. `--version` matches an exact release version after optional `v` prefix normalization.
+
+The extension version is defined once in `cog-extension.json`; Mix reads that version from the manifest, release tags use `vX.Y.Z`, and the install flag uses the matching bare semver `X.Y.Z`.
 
 ---
 
@@ -195,6 +200,24 @@ Produces the `cog_elixir` escript. To install for Cog:
 ```sh
 mkdir -p bin && cp cog_elixir bin/cog-elixir
 ```
+
+### Local install workflow
+
+Cog installs from GitHub release source tarballs and then runs the manifest build command locally:
+
+```sh
+mix local.hex --force
+mix deps.get
+mix escript.build
+mkdir -p bin && cp cog_elixir bin/cog-elixir
+```
+
+### Release
+
+- Set the next version in `cog-extension.json`
+- Tag releases as `vX.Y.Z` to match Cog's exact-version install flow
+- Pushing a matching tag triggers GitHub Actions to verify the tag against `cog-extension.json`, run tests, and create a GitHub Release
+- Cog installs from the release source tarball, but the extension still builds locally after download
 
 ### Test
 

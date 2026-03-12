@@ -1,7 +1,11 @@
 defmodule CogElixir.MixProject do
   use Mix.Project
 
-  @version "0.1.0"
+  @extension_metadata_path Path.expand("cog-extension.json", __DIR__)
+  @version @extension_metadata_path
+           |> File.read!()
+           |> :json.decode()
+           |> Map.fetch!("version")
 
   def project do
     [

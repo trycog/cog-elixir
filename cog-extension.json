@@ -1,5 +1,6 @@
 {
   "name": "cog-elixir",
+  "version": "0.1.0",
   "extensions": [".ex", ".exs", ".eex", ".heex"],
   "language_names": ["elixir"],
   "args": ["--output", "{output}", "{files}"],
