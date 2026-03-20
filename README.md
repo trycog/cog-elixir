@@ -42,6 +42,7 @@ Add index patterns to your project's `.cog/settings.json`:
 {
   "code": {
     "index": [
+      "config/**/*.exs"
       "lib/**/*.ex",
       "lib/**/*.eex",
       "lib/**/*.heex",
